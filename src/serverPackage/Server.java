@@ -1,34 +1,32 @@
-
 package serverPackage;
 
+import java.io.*;
 import java.net.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class Server {
+    public static void main(String[] args) {
+        try {
+            ServerSocket serveurSocket = new ServerSocket(5000);
+            System.out.println("Serveur en attente de connexion ");
 
-	public static void main(String[] args) {
-		System.out.println("Je suis un serveur en attente la connexion d'un client ");
-		try {
-			ServerSocket serveur = new ServerSocket(5000);
-			Socket Socket = serveur.accept();
-			System.out.println("connecté");
-			InputStream in = Socket.getInputStream();
-			DataOutputStream out = new DataOutputStream(Socket.getOutputStream());
-			int x = in.read();
-			System.out.println("Serveur a reçu : " + x);
-			int result = x * 5;
-			out.writeInt(result);
-			Socket.close();
+            Socket socket = serveurSocket.accept();
+            System.out.println("Client connecté");
 
-		} catch (IOException e) {
-			System.out.println(e.toString());
-		}
-		System.out.println("un client est connecté");
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            String message = in.readLine();
+            int x = Integer.parseInt(message);
+            System.out.println("Nombre " + x);
+            int resultat = x * 5;
+            System.out.println("resultat : " + x + " * 5 = " + resultat);
+            out.println(resultat);
+            System.out.println("Résultat envoyé au client.");
+            socket.close();
+            serveurSocket.close();
+            System.out.println("Connexion fermée.");
 
-	}
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

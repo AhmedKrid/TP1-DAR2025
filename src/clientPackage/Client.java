@@ -1,31 +1,29 @@
 package clientPackage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
 
 public class Client {
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 5000);
+            System.out.println("✅ Connecté au serveur.");
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Entrez un entier : ");
+            int x = sc.nextInt();
+            out.println(x);
+            System.out.println("Nombre envoyé au serveur : " + x);
+            String resultat = in.readLine();
+            System.out.println("Résultat reçu du serveur : " + resultat);
+            socket.close();
+            sc.close();
+            System.out.println("Connexion fermée.");
 
-	public static void main(String[] args) {
-		System.out.println("Je suis un client pas encore connecté...");
-		try {
-			Socket s = new Socket("localhost", 5000);
-			System.out.println("connecté");
-			System.out.println("saisir");
-			Scanner input = new Scanner(System.in);
-			int number = input.nextInt();
-			OutputStream out = s.getOutputStream();
-			out.write(number);
-
-			InputStream in = s.getInputStream();
-			int result = in.read();
-			System.out.println("le resultas " + result);
-
-		} catch (IOException e) {
-			System.out.println(e.toString());
-		}
-	}
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
