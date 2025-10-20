@@ -17,39 +17,26 @@ public class Client {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            boolean continuer = true;
-            while (continuer) {
-                System.out.println("Sélectionnez l'opération :");
-                System.out.println("1 - Addition");
-                System.out.println("2 - Soustraction");
-                System.out.println("3 - Multiplication");
-                System.out.println("4 - Division");
-                System.out.println("0 - Quitter");
-                System.out.print("Entrez votre choix : ");
-                int choix = sc.nextInt();
+            System.out.println("Connecté au serveur !");
+            String operation;
 
-                if (choix == 0) {
-                    continuer = false;
+            while (true) {
+                System.out.print("Entrez une opération (ex: 55 * 25) ou 'exit' pour quitter : ");
+                operation = sc.nextLine();
+                out.println(operation);
+
+                if (operation.equalsIgnoreCase("exit")) {
                     break;
                 }
 
-                System.out.print("Entrez le premier nombre : ");
-                double nb1 = sc.nextDouble();
-                System.out.print("Entrez le deuxième nombre : ");
-                double nb2 = sc.nextDouble();
-
-                out.println(choix);
-                out.println(nb1);
-                out.println(nb2);
-
                 String resultat = in.readLine();
-                System.out.println("Résultat reçu du serveur : " + resultat);
-                System.out.println();
+                System.out.println("Réponse du serveur -> " + resultat);
             }
 
             socket.close();
             sc.close();
-            System.out.println("Connexion terminée.");
+            System.out.println("Client terminé.");
+
         } catch (IOException e) {
             e.printStackTrace();
         }

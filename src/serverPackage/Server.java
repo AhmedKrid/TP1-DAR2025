@@ -19,52 +19,44 @@ public class Server {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            boolean continuer = true;
-            while (continuer) {
-                String choixOpStr = in.readLine();
-                String nb1Str = in.readLine();
-                String nb2Str = in.readLine();
-
-                if (choixOpStr == null || nb1Str == null || nb2Str == null) break;
-
-                int choixOp = Integer.parseInt(choixOpStr);
-                double nb1 = Double.parseDouble(nb1Str);
-                double nb2 = Double.parseDouble(nb2Str);
-
-                double resultat = 0;
-                boolean valid = true;
-
-                switch (choixOp) {
-                    case 1: // Addition
-                        resultat = nb1 + nb2;
-                        break;
-                    case 2: // Soustraction
-                        resultat = nb1 - nb2;
-                        break;
-                    case 3: // Multiplication
-                        resultat = nb1 * nb2;
-                        break;
-                    case 4: // Division
-                        if (nb2 != 0) {
-                            resultat = nb1 / nb2;
-                        } else {
-                            valid = false;
-                        }
-                        break;
-                    default:
-                        valid = false;
+            String operation;
+            while ((operation = in.readLine()) != null) {
+                operation = operation.trim();
+                if (operation.equalsIgnoreCase("exit")) {
+                    break;
                 }
 
-                if (valid) {
-                    out.println(resultat);
-                } else {
-                    out.println("Erreur : opération invalide ou division par zéro");
+                try {
+                    // Séparation de l'opération : nombre opérateur nombre
+                    String[] tokens = operation.split(" ");
+                    if (tokens.length != 3) throw new Exception("Format invalide");
+
+                    double nb1 = Double.parseDouble(tokens[0]);
+                    String operateur = tokens[1];
+                    double nb2 = Double.parseDouble(tokens[2]);
+
+                    double resultat = 0;
+                    switch (operateur) {
+                        case "+": resultat = nb1 + nb2; break;
+                        case "-": resultat = nb1 - nb2; break;
+                        case "*": resultat = nb1 * nb2; break;
+                        case "/": 
+                            if (nb2 == 0) throw new Exception("Division par zéro");
+                            resultat = nb1 / nb2; break;
+                        default: throw new Exception("Opérateur invalide");
+                    }
+
+                    out.println("Résultat = " + resultat);
+
+                } catch (Exception e) {
+                    out.println("Erreur : opération invalide (Format attendu : nombre opérateur nombre)");
                 }
             }
 
             socket.close();
             serverSocket.close();
             System.out.println("Connexion fermée.");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
