@@ -2,62 +2,52 @@ package serverPackage;
 
 import java.io.*;
 import java.net.*;
+import object.Operation;
 
 public class Server {
     public static void main(String[] args) {
-        int port = 5000;
-
         try {
-            InetAddress ip = InetAddress.getLocalHost();
-            ServerSocket serverSocket = new ServerSocket();
-            serverSocket.bind(new InetSocketAddress(ip, port));
+            ServerSocket serverSocket = new ServerSocket(5000);
+            System.out.println("Serveur en attente de connexion...");
 
-            System.out.println("Serveur en attente de connexion sur " + ip.getHostAddress() + ":" + port);
             Socket socket = serverSocket.accept();
-            System.out.println("Client connecté : " + socket.getInetAddress().getHostAddress());
+            System.out.println("Client connecté !");
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 
-            String operation;
-            while ((operation = in.readLine()) != null) {
-                operation = operation.trim();
-                if (operation.equalsIgnoreCase("exit")) {
+            // Réception de l’objet
+            Operation op = (Operation) ois.readObject();
+            System.out.println("Objet reçu : " + op.getOp1() + " " + op.getOperateur() + " " + op.getOp2());
+
+            // Traitement
+            double resultat = 0;
+            switch (op.getOperateur()) {
+                case '+': resultat = op.getOp1() + op.getOp2(); break;
+                case '-': resultat = op.getOp1() - op.getOp2(); break;
+                case '*': resultat = op.getOp1() * op.getOp2(); break;
+                case '/': 
+                    if (op.getOp2() != 0)
+                        resultat = op.getOp1() / op.getOp2();
+                    else
+                        throw new ArithmeticException("Division par zéro !");
                     break;
-                }
-
-                try {
-                    // Séparation de l'opération : nombre opérateur nombre
-                    String[] tokens = operation.split(" ");
-                    if (tokens.length != 3) throw new Exception("Format invalide");
-
-                    double nb1 = Double.parseDouble(tokens[0]);
-                    String operateur = tokens[1];
-                    double nb2 = Double.parseDouble(tokens[2]);
-
-                    double resultat = 0;
-                    switch (operateur) {
-                        case "+": resultat = nb1 + nb2; break;
-                        case "-": resultat = nb1 - nb2; break;
-                        case "*": resultat = nb1 * nb2; break;
-                        case "/": 
-                            if (nb2 == 0) throw new Exception("Division par zéro");
-                            resultat = nb1 / nb2; break;
-                        default: throw new Exception("Opérateur invalide");
-                    }
-
-                    out.println("Résultat = " + resultat);
-
-                } catch (Exception e) {
-                    out.println("Erreur : opération invalide (Format attendu : nombre opérateur nombre)");
-                }
+                default: 
+                    System.out.println("Opérateur non reconnu !");
+                    break;
             }
 
+            // Envoi du résultat
+            oos.writeObject(resultat);
+            System.out.println("Résultat envoyé au client : " + resultat);
+
+            // Fermeture
+            ois.close();
+            oos.close();
             socket.close();
             serverSocket.close();
-            System.out.println("Connexion fermée.");
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

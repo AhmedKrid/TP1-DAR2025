@@ -4,40 +4,44 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+import object.Operation;
+
 public class Client {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.print("Entrez l'adresse IP du serveur : ");
-        String ipServeur = sc.nextLine();
-        int port = 5000;
-
         try {
-            Socket socket = new Socket(ipServeur, port);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            Socket socket = new Socket("localhost", 5000);
+            System.out.println("Connecté au serveur.");
 
-            System.out.println("Connecté au serveur !");
-            String operation;
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 
-            while (true) {
-                System.out.print("Entrez une opération (ex: 55 * 25) ou 'exit' pour quitter : ");
-                operation = sc.nextLine();
-                out.println(operation);
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Entrez le premier nombre : ");
+            double op1 = sc.nextDouble();
 
-                if (operation.equalsIgnoreCase("exit")) {
-                    break;
-                }
+            System.out.print("Entrez l'opérateur (+, -, *, /) : ");
+            char operateur = sc.next().charAt(0);
 
-                String resultat = in.readLine();
-                System.out.println("Réponse du serveur -> " + resultat);
-            }
+            System.out.print("Entrez le deuxième nombre : ");
+            double op2 = sc.nextDouble();
 
-            socket.close();
+            // Création de l’objet
+            Operation operation = new Operation(op1, op2, operateur);
+
+            // Envoi au serveur
+            oos.writeObject(operation);
+
+            // Lecture du résultat
+            double resultat = (double) ois.readObject();
+            System.out.println("Résultat reçu du serveur : " + resultat);
+
+            // Fermeture
             sc.close();
-            System.out.println("Client terminé.");
+            ois.close();
+            oos.close();
+            socket.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
